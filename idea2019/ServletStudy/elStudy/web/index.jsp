@@ -61,5 +61,17 @@
           num1第一个文本框不为空
       </c:otherwise>
   </c:choose>
+  <br>使用'|'和','作为分隔符：<br>
+  <c:forTokens  var="token" items="Spring,Summer|Autumn,Winter" delims="|,">${token}</c:forTokens>
+  相对路径：<br>
+      <c:url var="url" value="addUser.jsp">
+      <c:param name="username" value="凤雏"/>
+      <c:param name="password" value="666"/>
+      </c:url>
+      <a href="addUser.jsp">${url}</a> <span>实际上是跳转到adduser.jsp里面href没改</span><br>
+<%--      懒得试了的要 fn.tld文件 复制过来 然后引入 我也搞不懂为什么我要复制 我都包导入了绝了 bug--%>
+<%--      fn:toUpperCase转化大写 fn:upLowerCase转化小写：${fn:toUpperCase("tdargon")}&nbsp;&nbsp;&nbsp;${fn:toLowerCase("TRIX")}--%>
+<%--本页面重定向到其他--感觉很蠢 --%>
+      <%--      <c:redirect url="http://localhost:8080/el/user"/>--%>
   </body>
 </html>
