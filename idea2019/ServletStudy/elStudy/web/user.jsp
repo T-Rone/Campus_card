@@ -30,8 +30,8 @@
     }
 </script>
 <body>
-<h3>三国英雄人物表</h3>
-<table border="1" cellpadding="15" cellspacing="0" bgcolor="#7fffd4">
+<h3 align="center">三国英雄人物表</h3>
+<table align="center" border="1" cellpadding="15" cellspacing="0" bgcolor="#7fffd4">
     <tr>
         <th><input type="checkbox" name="checkAll" id="checkAll" onclick="ckAll()">全选/全不选</th>
         <th>编号</th>
@@ -54,12 +54,38 @@
            </td>
        </tr>
     </c:forEach>
-
+</table>
+<hr>
+<%--   分页查询--%>
+    <table align="center">
+        <tr>
+            <td><button onclick="goPage(1)">首页</button></td>
+            <td><button onclick="goPage(${page.pageCurrent-1})">上一页</button></td>
+            <c:forEach begin="1" end="${page.totalSize}" var="i">
+                <td><button onclick="goPage(${i})">${i}</button></td>
+            </c:forEach>
+            <td>当前页：<input type="text" size="1" value="${page.pageCurrent}"  onblur="goPage(this.value)"></td>
+            <td><button onclick="goPage(${page.pageCurrent+1})">下一页</button></td>
+            <td><button onclick="goPage(${page.totalSize})">尾页</button></td>
+            <td><button></button></td>
+        </tr>
+    </table>
 <%--    <tr>--%>
 <%--        <td>${sessionScope.users[0].id}</td>--%>
 <%--        <td>${sessionScope.users[0].username}</td>--%>
 <%--        <td>${sessionScope.users[0].password}</td>--%>
 <%--    </tr>--%>
-    </table>
+<script>
+    function goPage(p) {
+        if (p<1){
+            p=1;
+        }
+        if (p>${page.totalSize})
+        {
+            p=${page.totalSize};
+        }
+        location.href='user?PageCurrent='+p;
+    }
+</script>
 </body>
 </html>
