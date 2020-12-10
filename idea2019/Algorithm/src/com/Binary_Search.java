@@ -39,9 +39,7 @@ public class Binary_Search {
                      }
                 long endTime=System.currentTimeMillis();
                 System.out.println("此次查询共花费" + (endTime - startTime) + "毫秒的时间。");
-
             }
-
         return -1;
     }
     /**
@@ -68,7 +66,7 @@ public class Binary_Search {
 
     }
     public static void main(String[] args) {
-          int [] array={6,1,3,7,86,2};
+          int [] array={1,3,4,8,9,86};
             //随机数组测试下性能
 //            int  [] array=new int[10000000];
 //            Random random = new Random();
@@ -77,13 +75,12 @@ public class Binary_Search {
 //                array[i] = random.nextInt(array.length);
 //            }
 
-        int find =bsearch(array,array.length,2);
+        int find =bsearch(array,array.length,5);
 //            System.out.println(Arrays.toString(a));
-            if (find==-1)
-            {
+            if (find==-1) {
                 System.out.println("not found");
             }
-            else {
+            else{
                 System.out.println("索引："+find);
             }
 //            forExample(86,array);
