@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/mvc
+       http://www.springframework.org/schema/mvc/spring-mvc.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+">
+    <!--    注解扫描 其实就是@controller 这样就只扫描@controller-->
+    <context:component-scan base-package="com.dragon" use-default-filters="false">
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+    <!--    注解驱动-->
+    <!--    安装fastjson-->
+    <mvc:annotation-driven>
+        <mvc:message-converters>
+            <bean class="com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter">
+                <!--                声明转化类型json-->
+                <property name="supportedMediaTypes">
+                    <list>
+                        <value>APPLICATION/JSON</value>
+                    </list>
+                </property>
+            </bean>
+        </mvc:message-converters>
+
+    </mvc:annotation-driven>
+
+    <!--    视图解析器-->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/jsp/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+    <!--    额外增加handle让静态资源访问 转发给tomcat默认的servlet  requestMapping 为/** 优先级最低-->
+    <mvc:default-servlet-handler/>
+    <!--        <mvc:resources mapping="/**" location="/WEB-INF/jsp/view/**"/>-->
+    <!--   异常解析器-->
+    <bean class="com.dragon.resolver.MyExceptionResovler"/>
+    <!--        <bean class="com.dragon.intercepter.MyInter1"/>-->
+    <!--        拦截器-->
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <!--            &lt;!&ndash;            <mvc:mapping path="/inter/test1"/>&ndash;&gt;-->
+            <!--            &lt;!&ndash;            <mvc:mapping path="/inter/test2"/>&ndash;&gt;-->
+            <!--            &lt;!&ndash;            <mvc:mapping path="/inter/test*"/>&ndash;&gt;-->
+            <mvc:mapping path="/**"/>
+            <!--            jsp这么路径拦截没用-->
+            <mvc:mapping path="/index.jsp"/>
+            <mvc:exclude-mapping path="/login.do"/>
+            <mvc:exclude-mapping path="/loginForm.do"/>
+            <mvc:exclude-mapping path="/view/insertUser.do"/>
+            <bean class="com.dragon.intercepter.MyInter1"/>
+        </mvc:interceptor>
+        <mvc:interceptor>
+            <mvc:mapping path="/upload.do"/>
+            <bean class="com.dragon.intercepter.FileUploadInterceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
+
+    <!--    上传解析器-->
+    <bean class="org.springframework.web.multipart.commons.CommonsMultipartResolver" id="multipartResolver">
+        <!-- 一般不这么用tomcat7能演示出来 后不行       最大上传文件大小 单位Byte 1048576=1M 超出后抛出MaxUploadSizeExceedException异常 可用异常解析器捕获-->
+        <property name="maxUploadSize" value="1048576"/>
+    </bean>
+
+</beans>

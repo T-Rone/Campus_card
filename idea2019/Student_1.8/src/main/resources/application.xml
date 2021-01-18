@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context.xsd
+           http://www.springframework.org/schema/tx
+           http://www.springframework.org/schema/tx/spring-tx.xsd
+           http://www.springframework.org/schema/aop 
+           http://www.springframework.org/schema/aop/spring-aop.xsd
+">
+    <context:property-placeholder location="classpath:druid.properties"/>
+
+    <bean class="com.alibaba.druid.pool.DruidDataSource"
+          id="dataSource" init-method="init" destroy-method="close">
+        <property name="driverClassName" value="${jdbc.driver}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+        <property name="initialSize" value="${initialSize}"/>
+        <property name="minIdle" value="${minIdel}"/>
+        <property name="maxActive" value="${maxActive}"/>
+
+        <property name="maxWait" value="${maxWait}"/>
+        <!--        间隔多少检测一次 检测需要关闭的空闲连接-->
+        <property name="timeBetweenEvictionRunsMillis" value="60000"/>
+        <!--        一个链接在池中的最小生产时间-->
+        <property name="minEvictableIdleTimeMillis" value="300000"/>
+    </bean>
+    <!--    生产会话工厂-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!--注入连接池-->
+        <property name="dataSource" ref="dataSource"/>
+        <!-- 注入dao-mapper文件信息,如果映射文件和dao接口同包且同名，则此配置可省略
+        也可以说是注解实现mybatis 不需要这个配置-->
+        <!--        <property name="mapperLocations">-->
+        <!--        <list>-->
+        <!--            <value>classpath:com/dragon/dao/*.xml</value>-->
+        <!--            <value>classpath:com/dragon/dao/**</value>-->
+        <!--        </list>-->
+        <!--        </property>-->
+        <!--    为dao-mapper文件中的实体定义缺省包路径-->
+        <property name="typeAliasesPackage" value="com.dragon.entity"/>
+        <property name="plugins">
+            <array>
+                <bean class="com.github.pagehelper.PageInterceptor"/>
+            </array>
+        </property>
+    </bean>
+
+    <!--    <bean class="com.dragon.dao.UserDao" abstract="true"/>-->
+    <!--    整合的MapperScannerConfigurer 配置-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer" id="mapperScannerConfigurer">
+        <property name="basePackage" value="com.dragon.dao"/>
+        <!--        根据类型注入 如果工厂只有一个sqlsessionFactory的bean时 此配置可省略-->
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+    </bean>
+    <!--    service注入-->
+    <bean class="com.dragon.service.StuServiceImpl" id="stuService"/>
+
+    <!--    避开扫描@controller-->
+    <context:component-scan base-package="com.dragon" use-default-filters="true">
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <!--    引入事务管理器-->
+    <bean class="org.springframework.jdbc.datasource.DataSourceTransactionManager" id="manager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <!--    @Transactional-->
+    <tx:annotation-driven transaction-manager="manager"/>
+    <!--事务通知-->
+    <tx:advice id="txManager" transaction-manager="manager">
+        <tx:attributes>
+            <!--            Uer结尾 mysql默认隔离级别(isolation)repeatable-read -->
+            <tx:method name="*User" isolation="DEFAULT" rollback-for="Exception" read-only="false"/>
+            <!--            query开头  查询这样写就够了-->
+            <tx:method name="query*" propagation="SUPPORTS"/>
+            <!--            剩余所有方法-->
+            <tx:method name="*" timeout="-1" propagation="REQUIRED"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <aop:config>
+        <aop:pointcut id="pc_tx" expression="execution(* com.dragon.service.StuServiceImpl.*(..))"/>
+        <aop:advisor advice-ref="txManager" pointcut-ref="pc_tx"/>
+    </aop:config>
+</beans>
